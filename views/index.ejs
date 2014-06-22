@@ -1,0 +1,83 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Twitter × Node.js feat. socket.io</title>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+    <link rel='stylesheet' href='/bootstrap/css/bootstrap.min.css' />
+    <link rel='stylesheet' href='/bootstrap/css/bootstrap-responsive.min.css' />
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+    <script src="/bootstrap/js/bootstrap.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+
+	var socket = io.connect('http://54.95.208.218:1337');
+	var keywords = new Array();
+	<% for(var i=0; i<keywords.length; i++) { 
+	var num = i+1;
+	%>
+		socket.on('mes_<%= i %>', function(t){
+			if($("#hash<%= num %>-tweets .tweet").length >= 100) {
+				$("#hash<%= num %>-tweets .tweet:last-child").remove();
+			}
+
+			$('<div></div>')
+				.html('<p class="tweet">' + t.text + '</p>')
+				.prependTo('#hash<%= num %>-tweets');
+			$("#hash<%= num %>-counter").html(t.counter);
+		});
+	<% } %>
+	/*
+	socket.on('counter', function(t) {
+		$("#counter").html(t);	
+	});
+	*/
+    </script>
+    <style>
+	.span6 {
+		border: 1px solid #dddddd;
+		border-radius: 4px;
+		padding-bottom: 10px;
+	}
+	.span6 h2 {
+		background-color: #e1e8ed;
+	}
+	.tweet {
+		padding-top: 20px;
+		padding-bottom: 20px;
+		border-bottom: 1px solid #ccc;
+	}
+	.tw-count {
+		font-size: 14px;	
+	}
+	.tw-count .tw-num{
+		font-size: 20px;
+		font-weight: bold;
+		color: red;
+	}
+	.tw-text {
+		padding: 10px;
+		padding-bottom: 30px;
+		margin-bottom: 10px;
+	}	
+    </style>
+  </head>
+  <body>
+    <h1>Twitter × Node.js feat. socket.io</h1>
+	<div id="main">
+		<div class="row-fluid">
+			<% for(var i=0; i<keywords.length; i++) { 
+				num = i+1;
+			%>
+			<div id="hash<%= num %>" class="span6">
+				<h2><%= keywords[i] %></h2>
+				<div class="tw-count">ツイート数：<span class="tw-num" id="hash<%= num %>-counter">0</span></div>				
+				<div class="tw-text" id="hash<%= num %>-tweets">
+				</div>
+			</div>
+			<% } %>
+		</div>
+	</div>	
+  </body>
+</html>
