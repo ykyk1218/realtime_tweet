@@ -4,14 +4,21 @@ var express = require('express');
 //var routes = require('./routes');
 //var user   = require('./routes/user');
 var twitter = require('ntwitter');
-var config = require('config');
+var conf = require('config');
 var twitter = new twitter({
-  consumer_key: config.twitter.consumer_key,
-  consumer_secret: config.twitter.consumer_secret,
-  access_token_key: config.twitter.access_token_key,
-  access_token_secret: config.twitter.access_token_secret 
+  consumer_key: conf.twitter.consumer_key,
+  consumer_secret: conf.twitter.consumer_secret,
+  access_token_key: conf.twitter.access_token_key,
+  access_token_secret: conf.twitter.access_token_secret 
 });
 
+require('date-utils');
+
+
+var mongoose = require('mongoose');
+var db = mongoose.connect('mongodb://localhost/tweet');
+var schema = new mongoose.Schema({tweet:{type:String}, created_at:{type:String}});
+var Tweet = db.model('tweet', schema);
 
 var app = express();
 //var io = require('socket.io').listen(app);
@@ -61,13 +68,13 @@ for(var i=0; i<keywords.length; i++) {
 	fs.readFile(dataFolder + i + '_count.txt', function(e, text) {
 		if(text.toString() != "undefined") {
 		//if(!e) {
+		console.log(text.toString());
 			counters.push(text.toString());
 		}
 		//}
 	});
 }
 
-console.log(counters);
 app.get('/', function(req, res) {
 	res.render('index', { title: 'Express Sample', keywords: keywords });
 
@@ -118,6 +125,12 @@ function twitterstream(twId, indexNum) {
 						var seconds = now.getSeconds() + "";	
 						fs.writeFile(dataFolder + indexNum + '_count.txt.' + year + month + day + hour + minutes, counters[indexNum],  function(e) {
 							console.log(e);
+						});
+
+						var time = now.toFormat("YYYY/MM/DD HH24:MI:SS");
+						var mTweet = new Tweet({tweet: data.text, created_at: time});
+						mTweet.save(function(err) {
+							console.log(err);
 						});
 
 						twId = data.id;
